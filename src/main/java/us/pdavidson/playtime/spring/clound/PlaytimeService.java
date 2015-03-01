@@ -1,5 +1,7 @@
 package us.pdavidson.playtime.spring.clound;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,20 @@ public class PlaytimeService {
     }
 
 
+    @HystrixCommand(
+            fallbackMethod = "getFallback",
+            commandKey="GetMessage",
+            threadPoolKey = "PlaytimeTP",
+            commandProperties = {
+                    @HystrixProperty(name= "execution.isolation.thread.timeoutInMilliseconds", value="800")
+
+            },
+            threadPoolProperties = {
+                    @HystrixProperty(name= "coreSize", value="15")
+                    ,@HystrixProperty(name="queueSizeRejectionThreshold", value="101")
+                    ,@HystrixProperty(name = "maxQueueSize", value = "101")
+            }
+    )
     public String getMessage() {
         String message = MESSAGES[ Math.abs(random.nextInt()) % (MESSAGES.length - 1) ];
 
